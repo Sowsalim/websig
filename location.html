@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webmapping avec Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map {
+            height: 600px;
+        }
+        #locate-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Carte interactive avec Leaflet</h1>
+    <div id="map"></div>
+    <button id="locate-btn">Localiser</button>
+    <script>
+        // Initialisation de la carte
+        var map = L.map('map').setView([14.79222, -16.92516], 12);
+
+        // Ajout des tuiles OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 25,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Données GeoJSON
+        var geojsonData = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": { "OBJECTID": 12, "DESCRIPTIF": "Clinique", "COMMUNE": "THIES OUEST", "QUARTIER": "CARRIERE", "OBSERVATIO": "CABINET DENTAIRE AMINATA" },
+                    "geometry": { "type": "Point", "coordinates": [ -16.92835563, 14.790552489 ] }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "OBJECTID": 140, "DESCRIPTIF": "Centre de santé", "COMMUNE": "THIES OUEST", "QUARTIER": "HLM DIXIEME", "OBSERVATIO": "CENTRE DE SANTE DR MAMADOU BATHILY" },
+                    "geometry": { "type": "Point", "coordinates": [ -16.936364338, 14.795786881 ] }
+                }
+            ]
+        };
+
+        // Ajout des données GeoJSON à la carte
+        L.geoJSON(geojsonData, {
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup(
+                    `<table class="popup-table">
+                        <tr><td>Identifiant : </td><td>${feature.properties.OBJECTID}</td></tr>
+                        <tr><td>Type : </td><td>${feature.properties.DESCRIPTIF}</td></tr>
+                        <tr><td>Commune : </td><td>${feature.properties.COMMUNE}</td></tr>
+                        <tr><td>Quartier : </td><td>${feature.properties.QUARTIER}</td></tr>
+                        <tr><td>Nom struct : </td><td>${feature.properties.OBSERVATIO}</td></tr>
+                    </table>`
+                );
+            }
+        }).addTo(map);
+
+        // Localisation de l'utilisateur
+        function locateUser() {
+            map.locate({ setView: true, maxZoom: 16 });
+        }
+
+        function onLocationFound(e) {
+            var radius = e.accuracy / 2; // Rayon de précision
+            L.marker(e.latlng)
+                .addTo(map)
+                .bindPopup("Vous êtes ici, avec une précision de " + Math.round(radius) + " mètres.")
+                .openPopup();
+            L.circle(e.latlng, radius).addTo(map); // Cercle de précision
+        }
+
+        function onLocationError(e) {
+            alert("Localisation impossible : " + e.message + "\nVeuillez activer votre GPS et autoriser la localisation.");
+        }
+
+        // Gestion des événements de localisation
+        map.on('locationfound', onLocationFound);
+        map.on('locationerror', onLocationError);
+
+        // Bouton de demande de localisation
+        document.getElementById('locate-btn').addEventListener('click', function () {
+            locateUser();
+        });
+    </script>
+</body>
+</html>
