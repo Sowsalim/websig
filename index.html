@@ -1,123 +1,100 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carte Leaflet et Panneau de Requête</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <title>Webmapping avec Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            display: grid;
-            grid-template-rows: auto 1fr auto; /* Barre de navigation, Corps, Pied de page */
-            height: 100vh;
-            background-color: #f0f2f5; /* Couleur de fond douce pour tout le corps */
-        }
-
-        /* Barre de navigation */
-        .navbar {
-            background: linear-gradient(90deg, #4b6cb7, #182848);
-            color: white;
-            text-align: center;
-            font-weight: 600;
-            padding: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Légère ombre pour la profondeur */
-            font-size: 1.4em;
-            text-transform: uppercase;
-        }
-
-        /* Corps principal */
-        .main {
-            display: grid;
-            grid-template-columns: 22% 78%; /* Panneau de requête et Carte */
-            gap: 10px; /* Espacement entre les deux colonnes */
-            padding: 10px;
-        }
-
-        /* Panneau de requête à gauche */
-        .left-panel {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px; /* Coins arrondis */
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Ombre douce */
-            overflow-y: auto;
-        }
-
-        .left-panel h2 {
-            font-size: 1.2em;
-            color: #34495e;
-            margin-bottom: 15px; /* Espacement sous le titre */
-            border-bottom: 2px solid #ecf0f1; /* Ligne sous le titre */
-            padding-bottom: 10px;
-        }
-
-        .left-panel p {
-            font-size: 0.95em;
-            color: #7f8c8d;
-            line-height: 1.6;
-        }
-
-        /* Carte Leaflet à droite */
-        .right-panel {
-            position: relative;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
         #map {
-            width: 100%;
-            height: 100%;
-            border-radius: 8px;
+            height: 600px;
         }
-
-        /* Pied de page */
-        .footer {
-            background-color: #34495e;
-            color: white;
-            text-align: center;
-            padding: 5px;
-            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1); /* Ombre vers le haut */
-            font-size: 1.1em;
+        #locate-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
-    <!-- Barre de navigation -->
-    <div class="navbar">
-        Cartographie interactive des structures sanitaires du Sénégal
-    </div>
-
-    <!-- Corps principal -->
-    <div class="main">
-        <!-- Panneau de requête -->
-        <div class="left-panel">
-            <h2>Panneau de requête</h2>
-            <p>Utilisez ce panneau pour entrer vos requêtes ou pour configurer les options d'affichage de la carte.</p>
-            <!-- Ajoutez ici les éléments de formulaire ou autres contenus pour les requêtes -->
-        </div>
-
-        <!-- Carte Leaflet -->
-        <div class="right-panel">
-            <div id="map"></div>
-        </div>
-    </div>
-
-    <!-- Pied de page -->
-    <div class="footer">
-        © 2024 - Mamadou Sow
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <h1>Carte interactive avec Leaflet</h1>
+    <div id="map"></div>
+    <button id="locate-btn">Localiser</button>
     <script>
-        // Initialisation de la carte Leaflet
-        var map = L.map('map').setView([14.692778, -17.446667], 13); // Coordonnées pour Dakar
+        // Initialisation de la carte
+        var map = L.map('map').setView([14.79222, -16.92516], 12);
 
+        // Ajout des tuiles OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            maxZoom: 25,
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
+
+        // Données GeoJSON
+        var geojsonData = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": { "OBJECTID": 12, "DESCRIPTIF": "Clinique", "COMMUNE": "THIES OUEST", "QUARTIER": "CARRIERE", "OBSERVATIO": "CABINET DENTAIRE AMINATA" },
+                    "geometry": { "type": "Point", "coordinates": [ -16.92835563, 14.790552489 ] }
+                },
+                {
+                    "type": "Feature",
+                    "properties": { "OBJECTID": 140, "DESCRIPTIF": "Centre de santé", "COMMUNE": "THIES OUEST", "QUARTIER": "HLM DIXIEME", "OBSERVATIO": "CENTRE DE SANTE DR MAMADOU BATHILY" },
+                    "geometry": { "type": "Point", "coordinates": [ -16.936364338, 14.795786881 ] }
+                }
+            ]
+        };
+
+        // Ajout des données GeoJSON à la carte
+        L.geoJSON(geojsonData, {
+            onEachFeature: function (feature, layer) {
+                layer.bindPopup(
+                    `<table class="popup-table">
+                        <tr><td>Identifiant : </td><td>${feature.properties.OBJECTID}</td></tr>
+                        <tr><td>Type : </td><td>${feature.properties.DESCRIPTIF}</td></tr>
+                        <tr><td>Commune : </td><td>${feature.properties.COMMUNE}</td></tr>
+                        <tr><td>Quartier : </td><td>${feature.properties.QUARTIER}</td></tr>
+                        <tr><td>Nom struct : </td><td>${feature.properties.OBSERVATIO}</td></tr>
+                    </table>`
+                );
+            }
+        }).addTo(map);
+
+        // Localisation de l'utilisateur
+        function locateUser() {
+            map.locate({ setView: true, maxZoom: 16 });
+        }
+
+        function onLocationFound(e) {
+            var radius = e.accuracy / 2; // Rayon de précision
+            L.marker(e.latlng)
+                .addTo(map)
+                .bindPopup("Vous êtes ici, avec une précision de " + Math.round(radius) + " mètres.")
+                .openPopup();
+            L.circle(e.latlng, radius).addTo(map); // Cercle de précision
+        }
+
+        function onLocationError(e) {
+            alert("Localisation impossible : " + e.message + "\nVeuillez activer votre GPS et autoriser la localisation.");
+        }
+
+        // Gestion des événements de localisation
+        map.on('locationfound', onLocationFound);
+        map.on('locationerror', onLocationError);
+
+        // Bouton de demande de localisation
+        document.getElementById('locate-btn').addEventListener('click', function () {
+            locateUser();
+        });
     </script>
 </body>
 </html>
